@@ -1,0 +1,97 @@
+<html>
+<head>
+<style>
+		body{
+			font-family:sans-serif;
+		}
+		img{
+			height:12em;
+			float:left;
+		}
+	</style>
+</head>
+<body>
+
+<div class="control" style="display:none">
+	<h2>barcode</h2>
+	<button id="barcode">Get barcode</button>
+	<ul></ul>
+
+	<h2>compass</h2>
+	<button id="heading">Get compass heading</button>
+	<ul></ul>
+
+	<h2>camera</h2>
+	<button id="camera">Get Picture (slightly hacked)</button>
+	<div class="imgs"></div>
+</div>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/expose_client.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+<script>
+
+	var d;
+
+	// barcode
+
+	expose()
+
+	// runs when the url is given
+	(function(url){
+		$('<img>',{'class':'qr',src:'https://chart.googleapis.com/chart?chs=450x450&cht=qr&chl='+url+'&choe=UTF-8'})
+			.appendTo('body');
+	})
+
+	// runs when the device proxy is given
+	(function(device){
+		d = device;
+		$('img.qr').remove();
+		$('.control').show()
+
+		$('#barcode')
+			.on('click', function(){
+				var ul = $(this).next();
+				device.barcodeScanner.scan(function(res){
+					console.log("Scanned bar code:", res.text);
+					$('<li>').text(res.text)
+					.appendTo(ul);
+				});			
+			});
+		
+
+		$('#heading')
+			.on('click', function(){
+				var ul = $(this).next();
+				device.compass.getCurrentHeading(function(res){
+					console.log("got heading:", res);
+					$('<li>').text(res.magneticHeading)
+					.appendTo(ul);
+				});	
+			});
+
+
+		$('#camera')
+			.on('click', function(){
+				var div = $(this).next();
+				device.captureHack(function(data){
+					// console.log("Camera success",data)
+					
+					$('<img>',{src:"data:image/jpeg;base64," + data})
+					.appendTo(div);
+
+				})
+			});
+
+	});
+
+
+
+
+
+</script>
+
+</body>
+</html>
